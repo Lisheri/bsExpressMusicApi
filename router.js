@@ -15,6 +15,15 @@ const SimiSong = require('./models/simiSong');
 const PlaylistDetail = require('./models/playlistDetail');
 const AllSong = require('./models/allSong');
 const AllPrivilege = require('./models/allPrivilege');
+const MvDetail = require('./models/mvDetail');
+const MvUrl = require('./models/mvUrl');
+const MvSimi = require('./models/mvSimi');
+const MvArtist = require('./models/mvArtist');
+const NewMv = require("./models/newMv");
+const EditorChoices = require('./models/editorChoice');
+const GoodBanner = require('./models/goodBanner');
+const HotGood = require('./models/hotgood');
+
 
 
 router.get("/personalized", (req, res) => {
@@ -319,6 +328,153 @@ router.get("/song/detail", async (req, res, next) => {
 	res.send(result);
 	return result;
 });
+
+router.get("/mv/detail", (req, res) => {
+	MvDetail.find({id: req.query.mvid}, (err, results) => {
+		res.send(results[0]);
+		return results[0];
+	});
+});
+
+router.get("/mv/url", (req, res) => {
+	MvUrl.find({id: req.query.id}, (err, results) => {
+		if (!results[0]) {
+			res.send([]);
+			return null;
+		} else {
+			const {
+				id,
+				url,
+				r,
+				size,
+				md5,
+				code,
+				expi,
+				fee,
+				mvFee,
+				st,
+				msg
+			} = results[0];
+			const data = {
+				id,
+				url,
+				r,
+				size,
+				md5,
+				code,
+				expi,
+				fee,
+				mvFee,
+				st,
+				msg
+			};
+			const newResult = {
+				code: 200,
+				data
+			};
+			res.send(newResult);
+			return newResult;
+		}
+	});
+});
+
+router.get("/simi/mv", (req, res) => {
+	MvSimi.find({id: req.query.mvid}, (err, results) => {
+		res.send(results[0]);
+		return results[0];
+	})
+});
+
+router.get("/artists", (req, res) => {
+	MvArtist.find({id: req.query.id}, (err, results) => {
+		res.send(results[0]);
+		return results[0];
+	});
+});
+
+router.get("/comment/mv", (req, res) => {
+	MusicComment.find({id: req.query.id}, (err, results) => {
+		if (!results[0]) {
+			res.send([]);
+			return null;
+		} else {
+			let {
+				isMusician,
+				userId,
+				topComments,
+				moreHot,
+				hotComments,
+				code,
+				comments,
+				total,
+				more
+			} = results[0];
+			total = hotComments.length;
+			const resultNew = {
+				isMusician,
+				userId,
+				topComments,
+				moreHot,
+				hotComments,
+				code,
+				comments,
+				total,
+				more
+			};
+			res.send(resultNew);
+			return resultNew;
+		}
+	});
+});
+
+router.get("/mv/all", (req, res) => {
+	NewMv.find({area: req.query.area, order: req.query.order, type: req.query.type}, (err, results) => {
+		let offset = parseInt(req.query.offset);
+		let pageSize = parseInt(req.query.limit);
+		if (!results[0]) {
+			res.send([]);
+			return null;
+		} else {
+			let {
+				count,
+				hasMore,
+				data,
+				code
+			} = results[0];
+			count = data.length;
+			data = data.splice(offset, pageSize);
+			const newResult = {
+				count,
+				hasMore,
+				data,
+				code
+			};
+			res.send(newResult);
+			return newResult;
+		}
+	});
+});
+
+router.get("/editor/all", (req, res) => {
+	EditorChoices.find({}, (err, results) => {
+		res.send(results);
+		return results;
+	});
+});
+
+router.get("/goodBanner", (req, res) => {
+	GoodBanner.find({type: 1}, (err, results) => {
+		res.send(results);
+		return results;
+	});
+});
+
+router.get("/hotgood/all", (req, res) => {
+	HotGood.find({}, (err, results) => {
+		res.send(results);
+		return results;
+	});
+})
 
 // 
 // router.get('/delcar', (req, res) => {
