@@ -23,6 +23,10 @@ const NewMv = require("./models/newMv");
 const EditorChoices = require('./models/editorChoice');
 const GoodBanner = require('./models/goodBanner');
 const HotGood = require('./models/hotgood');
+const GoodsInfo = require('./models/goodsInfo');
+const IpGood = require('./models/ipGood');
+const ShopCart = require('./models/shopCart');
+const User = require('./models/user');
 
 
 
@@ -48,10 +52,10 @@ router.get('/personalized/newsong', (req, res) => {
 });
 
 router.get('/banner', (req, res) => {
-		Banner.find({}, (err, banners) => {
-			res.send(banners);
-			return banners;
-		});
+	Banner.find({}, (err, banners) => {
+		res.send(banners);
+		return banners;
+	});
 });
 
 router.get('/search/hot', (req, res) => {
@@ -63,21 +67,21 @@ router.get('/search/hot', (req, res) => {
 
 router.get('/top/song', (req, res) => {
 	// let typeGet = req.query.type;
-	Song.find({type: req.query.type}, (err, songs) => {
+	Song.find({ type: req.query.type }, (err, songs) => {
 		res.send(songs[0]);
 		return songs[0];
 	})
 });
 
 router.get('/lyric', (req, res) => {
-	Lyric.find({id: req.query.id}, (err, lyrics) => {
+	Lyric.find({ id: req.query.id }, (err, lyrics) => {
 		res.send(lyrics[0]);
 		return lyrics[0];
 	});
 });
 
 router.get('/top/playlist/highquality', (req, res) => {
-	Higthquality.find({cat: req.query.cat}, (err, highquality) => {
+	Higthquality.find({ cat: req.query.cat }, (err, highquality) => {
 		res.send(highquality[0]);
 		return highquality[0];
 	});
@@ -89,7 +93,7 @@ router.get('/top/playlist', (req, res, next) => {
 	if (offset < 0) {
 		offset = 0;
 	}
-	Playlist.find({cat: req.query.cat}, (err, results) => {
+	Playlist.find({ cat: req.query.cat }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
@@ -122,7 +126,7 @@ router.get('/comment/music', (req, res, next) => {
 	if (offset < 0) {
 		offset = 0;
 	}
-	MusicComment.find({id: req.query.id}, (err, results) => {
+	MusicComment.find({ id: req.query.id }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
@@ -158,11 +162,11 @@ router.get('/comment/music', (req, res, next) => {
 });
 
 router.get('/simi/playlist', (req, res) => {
-	SimiPlaylist.find({id: req.query.id}, (err, results) => {
+	SimiPlaylist.find({ id: req.query.id }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
-		}else {
+		} else {
 			let {
 				playlists,
 				code
@@ -178,7 +182,7 @@ router.get('/simi/playlist', (req, res) => {
 });
 
 router.get('/simi/song', (req, res) => {
-	SimiSong.find({id: req.query.id}, (err, results) => {
+	SimiSong.find({ id: req.query.id }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
@@ -198,7 +202,7 @@ router.get('/simi/song', (req, res) => {
 });
 
 router.get('/playlist/detail', (req, res) => {
-	PlaylistDetail.find({id: req.query.id}, (err, results) => {
+	PlaylistDetail.find({ id: req.query.id }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
@@ -230,7 +234,7 @@ router.get('/comment/playlist', (req, res, next) => {
 	if (offset < 0) {
 		offset = 0;
 	}
-	MusicComment.find({id: req.query.id}, (err, results) => {
+	MusicComment.find({ id: req.query.id }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
@@ -266,7 +270,7 @@ router.get('/comment/playlist', (req, res, next) => {
 });
 
 router.get('/comment/hot', (req, res, next) => {
-	MusicComment.find({id: req.query.id}, (err, results) => {
+	MusicComment.find({ id: req.query.id }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
@@ -303,10 +307,10 @@ router.get('/comment/hot', (req, res, next) => {
 // 	}
 // 	return details;
 // };
-const getDetail =async function (id, allDetail) {
-	return allDetail.find({id: id}, (err, results) => results[0])
+const getDetail = async function (id, allDetail) {
+	return allDetail.find({ id: id }, (err, results) => results[0])
 };
-const getDetails = async function(allDetail, idArrays) {
+const getDetails = async function (allDetail, idArrays) {
 	let details = [];
 	for (let i = 0; i < idArrays.length; i++) {
 		if ((await getDetail(idArrays[i], allDetail))[0]) {
@@ -330,14 +334,14 @@ router.get("/song/detail", async (req, res, next) => {
 });
 
 router.get("/mv/detail", (req, res) => {
-	MvDetail.find({id: req.query.mvid}, (err, results) => {
+	MvDetail.find({ id: req.query.mvid }, (err, results) => {
 		res.send(results[0]);
 		return results[0];
 	});
 });
 
 router.get("/mv/url", (req, res) => {
-	MvUrl.find({id: req.query.id}, (err, results) => {
+	MvUrl.find({ id: req.query.id }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
@@ -379,21 +383,21 @@ router.get("/mv/url", (req, res) => {
 });
 
 router.get("/simi/mv", (req, res) => {
-	MvSimi.find({id: req.query.mvid}, (err, results) => {
+	MvSimi.find({ id: req.query.mvid }, (err, results) => {
 		res.send(results[0]);
 		return results[0];
 	})
 });
 
 router.get("/artists", (req, res) => {
-	MvArtist.find({id: req.query.id}, (err, results) => {
+	MvArtist.find({ id: req.query.id }, (err, results) => {
 		res.send(results[0]);
 		return results[0];
 	});
 });
 
 router.get("/comment/mv", (req, res) => {
-	MusicComment.find({id: req.query.id}, (err, results) => {
+	MusicComment.find({ id: req.query.id }, (err, results) => {
 		if (!results[0]) {
 			res.send([]);
 			return null;
@@ -428,7 +432,7 @@ router.get("/comment/mv", (req, res) => {
 });
 
 router.get("/mv/all", (req, res) => {
-	NewMv.find({area: req.query.area, order: req.query.order, type: req.query.type}, (err, results) => {
+	NewMv.find({ area: req.query.area, order: req.query.order, type: req.query.type }, (err, results) => {
 		let offset = parseInt(req.query.offset);
 		let pageSize = parseInt(req.query.limit);
 		if (!results[0]) {
@@ -463,7 +467,7 @@ router.get("/editor/all", (req, res) => {
 });
 
 router.get("/goodBanner", (req, res) => {
-	GoodBanner.find({type: 1}, (err, results) => {
+	GoodBanner.find({ type: 1 }, (err, results) => {
 		res.send(results);
 		return results;
 	});
@@ -476,6 +480,143 @@ router.get("/hotgood/all", (req, res) => {
 	});
 })
 
+router.get("/goodDec/:id", (req, res) => {
+	GoodsInfo.find({ id: req.params.id }, (err, results) => {
+		if (results[0]) {
+			const {
+				list,
+				tabContents,
+				colors,
+				price,
+				id,
+				title,
+				stock,
+				goodDec,
+				details
+			} = results[0];
+			console.log(tabContents)
+			const newResult = {
+				list,
+				tabContents,
+				colors,
+				price,
+				id,
+				title,
+				stock,
+				goodDec,
+				details
+			}
+			res.send(newResult);
+			return newResult;
+		} else {
+			res.send(err);
+			return err;
+		}
+
+	});
+})
+
+router.get('/ipGood/all', (req, res) => {
+	IpGood.find({}, (err, results) => {
+		res.send(results);
+		return results;
+	});
+})
+
+router.get('/shopCart/all', (req, res) => {
+	ShopCart.find({}, (err, results) => {
+		res.send(results);
+		return results;
+	});
+});
+
+router.post('/shopCart/saveNum', (req, res, next) => {
+	ShopCart.findOneAndUpdate({ id: req.body.id }, { goodsNum: req.body.num, checked: req.body.checked }, (err, ret) => {
+		if (err) {
+			console.info("更新失败");
+			res.send(err + '更新失败');
+			return err;
+		} else {
+			console.log("更新成功" + ret);
+			res.send(ret);
+			return ret;
+		}
+	})
+});
+
+router.post('/shopCart/inCart', (req, res, next) => {
+	const goodInfo = req.body;
+	ShopCart.find({ id: goodInfo.id }, (err, results) => {
+		if (results.length === 0 || results.every((item, index) => {goodInfo.id !== item.id})) {
+			new ShopCart(goodInfo).save((err2) => {
+				if (err) {
+					res.send(err2);
+					return err2;
+				} else {
+					res.send("ok");
+					return "ok";
+				}
+			})
+		} else {
+			goodInfo.goodsNum = parseInt(goodInfo.goodsNum) + parseInt(results[0].goodsNum);
+			ShopCart.findOneAndUpdate({ id: req.body.id }, { goodsNum: goodInfo.goodsNum }, (err, ret) => {
+				if (err) {
+					console.info("更新失败");
+					res.send(err + '更新失败');
+					return err;
+				} else {
+					console.log("更新成功" + ret);
+					res.send(ret);
+					return ret;
+				}
+			})
+		}
+
+	});
+
+})
+
+router.post('/shopCart/deleteGood', (req, res, next) => {
+	ShopCart.deleteOne({ id: req.body.id }, (err, docs) => {
+		if (err) { return console.log('删除数据失败') }
+		else {
+			res.send("ok");
+			return "ok";
+		}
+	});
+})
+
+router.post('/user/register', (req, res, next) => {
+	console.info(req.body);
+	const{username, pass, email} = req.body;
+	const newUser = {
+		username: username,
+		password: pass,
+		email: email,
+		userId: Math.random().toFixed(8)*Math.pow(10,9)
+	}
+	new User(newUser).save((err) => {
+		if (err) {
+			res.send(err);
+			return err;
+		} else {
+			res.send("success");
+			return "success";
+		}
+	})
+})
+
+router.get('/user/all', (req, res) => {
+	User.find({username: req.query.username}, (err, ret) => {
+		if (err) {
+			res.send(err);
+			return err;
+		} else {
+			res.send(ret);
+			return ret;
+		}
+	})
+})
 // 
 // router.get('/delcar', (req, res) => {
 // 	console.log(req.query);
