@@ -27,6 +27,7 @@ const GoodsInfo = require('./models/goodsInfo');
 const IpGood = require('./models/ipGood');
 const ShopCart = require('./models/shopCart');
 const User = require('./models/user');
+const Address = require('./models/address');
 
 
 
@@ -547,7 +548,7 @@ router.post('/shopCart/saveNum', (req, res, next) => {
 router.post('/shopCart/inCart', (req, res, next) => {
 	const goodInfo = req.body;
 	ShopCart.find({ id: goodInfo.id }, (err, results) => {
-		if (results.length === 0 || results.every((item, index) => {goodInfo.id !== item.id})) {
+		if (results.length === 0 || results.every((item, index) => { goodInfo.id !== item.id })) {
 			new ShopCart(goodInfo).save((err2) => {
 				if (err) {
 					res.send(err2);
@@ -588,12 +589,12 @@ router.post('/shopCart/deleteGood', (req, res, next) => {
 
 router.post('/user/register', (req, res, next) => {
 	console.info(req.body);
-	const{username, pass, email} = req.body;
+	const { username, pass, email } = req.body;
 	const newUser = {
 		username: username,
 		password: pass,
 		email: email,
-		userId: Math.random().toFixed(8)*Math.pow(10,9)
+		userId: Math.random().toFixed(8) * Math.pow(10, 9)
 	}
 	new User(newUser).save((err) => {
 		if (err) {
@@ -607,7 +608,35 @@ router.post('/user/register', (req, res, next) => {
 })
 
 router.get('/user/all', (req, res) => {
-	User.find({username: req.query.username}, (err, ret) => {
+	User.find({ username: req.query.username }, (err, ret) => {
+		if (err) {
+			res.send(err);
+			return err;
+		} else {
+			res.send(ret[0]);
+			return ret;
+		}
+	})
+})
+// * 登录验证
+router.post('/user/login', (req, res) => {
+	User.find({ username: req.body.username }, (err, ret) => {
+		if (err) {
+			res.send(err);
+			return err;
+		} else {
+			if (ret[0].password === req.body.password) {
+				res.send("success")
+			} else {
+				res.send("nonono")
+			}
+		}
+	})
+})
+
+// 获取当前账号的地址
+router.get('/user/address', (req, res) => {
+	Address.find({ userId: req.query.userId }, (err, ret) => {
 		if (err) {
 			res.send(err);
 			return err;
@@ -616,6 +645,49 @@ router.get('/user/all', (req, res) => {
 			return ret;
 		}
 	})
+});
+
+router.post('/user/updateAddress', (req, res) => {
+	let {
+		name,
+		phone,
+		address,
+		_id,
+	} = req.body
+	// userId = parseInt(userId)
+	Address.findByIdAndUpdate({ _id: _id }, { name: name, phone: phone, address: address }, (err, ret) => {
+		if (err) {
+			res.send(err);
+			return err;
+		} else {
+			res.send("updateSuccess!!");
+			return "success";
+		}
+	})
+});
+
+router.post('/user/addAddress', (req, res) => {
+	const newAddress = req.body;
+	console.info(req.body);
+	new Address(newAddress).save(err => {
+		if (err) {
+			res.send(err);
+			return err;
+		} else {
+			res.send("success");
+			return "success";
+		}
+	})
+})
+
+router.post("/user/removeAddress", (req, res) => {
+	Address.deleteOne({ _id: req.body._id }, (err, docs) => {
+		if (err) { return console.log('删除数据失败') }
+		else {
+			res.send("ok");
+			return "ok";
+		}
+	});
 })
 // 
 // router.get('/delcar', (req, res) => {
