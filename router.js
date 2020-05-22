@@ -28,6 +28,69 @@ const IpGood = require('./models/ipGood');
 const ShopCart = require('./models/shopCart');
 const User = require('./models/user');
 const Address = require('./models/address');
+const Order = require('./models/order');
+const axios = require('axios');
+
+const AlipaySdk = require('alipay-sdk').default;
+/**支付宝接口配置 */
+const AlipayFormData = require('alipay-sdk/lib/form').default
+let fs = require('fs');
+const path = require('path');
+
+const alipaySdk = new AlipaySdk({
+	appId: 2016102300744361,
+	privateKey: "MIIEowIBAAKCAQEAjsNQ4ahMSVLzMduvR9EKVnDDXrNU/6aPTYZH1fRU9RbEyOM/O6sOiR8kvWjTFBfRtjFHJooPv1M8FBrQMjJE4V3GmSLQi60LTLOIvIrqFekza8nolucr9K27bzp3FAap/AWGPA3aKPgDyq4YjJt9LjtyzBzuB6raNbg7l0hDd3ILIBf6A2NngCckRSLJI6hg2Ud4xWQxJt3hWpOB+Qu5/N3cuZCIXa6r6rrXPGLqptsOx1uUJRdUDaOMeKx/qvHnrQil6gsucYDAlPF8djDrtawbJp5slTslb7AdAle9FVDyi1kk46pVp9SQnFKsGQ0JP3cTJ4H0mrD91BznJ5TNDQIDAQABAoIBAGgcNbKqmh9q16GHdLbp0iEhkMhR/W2GWMEPaPm1efNWDGH3nxhzcWE8Df33IN9pU20LWLjZPAyptYlv2F6S3DqBuZ/ZjL4fjrr7vn7Iy1b5Pp+fmffaU+rWe3bs6wP2rCX3HWJUM8FmxNUcyxhXGB4MCnahrlB3HzTHyuVTNKg4sq/6sRtGrnNdf03ceu93btF2rv2p5E1zoXhpHyWrxyt7OYTflPrltew9mD7xtSoZ4Xx89wZqshz57l3zerl0chHnXv7ZNGeezLGkwXYyKR8h7Tf4ufIGtnDmh1wW7lvZ4sglTfWGAW2idEAc5/uwb+bbF/Tvr0hwK0WhnPR8Jh0CgYEAxmvb1QWC9JAohWvkqGbtxlcy/7uMMtYtFQjgnPgdoj+KHArQfO5i6sK+TqtH6rq7nsCskVAroLGqxf6vvHD36tDmhA5UL3bnCcfnEEGSTYwqeTUJZEGLLQfwQDv98pSvQKp/1x4ib9axhqbwYvk44iSSPCCMyKcu7wQ0Cbz9r08CgYEAuDDCXvLPvmSvTeD74BBeHit4GDwx3+IqlRgWUrGbZqYuDdjMMZ+g8Fdd35GHZFMJJBdh8KDmiMAnJOO+3uoKo1i/lcwNMhtkNPxEFueUfhH278SRJklpBDqfJjarES/nTFzvfVURP2T9ugK/VOvee24H9+u+W66FJmtEqmlxhuMCgYEAif77fZR+ti4IMHqQJVqoZXfBvT+nSrfP1MA+zox0t6FvIP+Ybjqwysqz5iyTMLm7wLYJjmpuXS0TMu5lNC5xDXtJxm/ctsH//rprhc/Eu3APHgr3xCUdcS0DNvlCLVKg691oWajYlGWBQ7+YkYz4tbZviaetoeM77flDY75vxFsCgYAuu5BVbt3uvLUN2WuOqhh3JyhNXdh5qXSMZ5QiXxXCsZ81vC/y10GKOWCD/PSRK9BB6/zZhLl5MOe9oFspS9BvKXFSnHcso26FUwwjk5ZFdmFk7Ea3pCCVBhqjI3O75J+W7G2HKzI5F3KY42GQNlg4kO5MpO+ja2A1IzpE0oQPaQKBgG5sk6/0GTmwDQxoWFZrcSpJtlTTB+V0yoAELiKPW7YhrMHOVXlTb6QUUzPRZ678S08wD1BFBJ8Xwrx2fHOTL/pR4q/Z94UorfWk3I7KFE4nS+k8D0yT2VnSYZxgvTpqj/cyOgr30kESKFopEKNRYr6M6n5BP+ARo0r/LPv6zB6o",
+	gateway: 'https://openapi.alipaydev.com/gateway.do',
+	publicKey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjsNQ4ahMSVLzMduvR9EKVnDDXrNU/6aPTYZH1fRU9RbEyOM/O6sOiR8kvWjTFBfRtjFHJooPv1M8FBrQMjJE4V3GmSLQi60LTLOIvIrqFekza8nolucr9K27bzp3FAap/AWGPA3aKPgDyq4YjJt9LjtyzBzuB6raNbg7l0hDd3ILIBf6A2NngCckRSLJI6hg2Ud4xWQxJt3hWpOB+Qu5/N3cuZCIXa6r6rrXPGLqptsOx1uUJRdUDaOMeKx/qvHnrQil6gsucYDAlPF8djDrtawbJp5slTslb7AdAle9FVDyi1kk46pVp9SQnFKsGQ0JP3cTJ4H0mrD91BznJ5TNDQIDAQAB",
+	signType: 'RSA2',
+	UID: 2088102180753605,
+})
+
+async function pay(outTradeNo, subject, body) {
+	const formData = new AlipayFormData()
+	// 调用 setMethod 并传入 get，会返回可以跳转到支付页面的 url
+	formData.setMethod('get')
+	// 配置异步回调接口
+	formData.addField('notifyUrl', 'http://127.0.0.1:8888/#/goods/order')
+	// 配置同步回调接口
+	formData.addField('returnUrl', 'http://127.0.0.1:8888/#goods/order')
+	// 设置参数
+	formData.addField('bizContent', {
+		// outTradeNo: '12321231_11142_59',
+		outTradeNo: outTradeNo,
+		productCode: 'FAST_INSTANT_TRADE_PAY',
+		totalAmount: '0.01',
+		// subject: 'Iphone 11',
+		// body: '商品详情',
+		subject: subject,
+		body: body,
+	});
+	// 请求接口
+	const result = await alipaySdk.exec(
+		'alipay.trade.page.pay',
+		{},
+		{ formData: formData },
+	);
+	console.log(result);
+	return result;
+}
+
+const queryOrder = async (outTradeNo) => {
+	const formData = new AlipayFormData()
+
+	formData.setMethod('get');
+	formData.addField('bizContent', {
+		outTradeNo
+	});
+	// 通过该接口主动查询订单状态
+	const result = await alipaySdk.exec(
+		'alipay.trade.query',
+		{},
+		{ formData: formData },
+	);
+
+	return result;
+}
 
 
 
@@ -66,6 +129,21 @@ router.get('/search/hot', (req, res) => {
 	});
 });
 
+router.get('/search/suggest', (req, res) => {
+	res.send("ok");
+	// console.info(req.query.keywords);
+	// AllSong.find({}, (err, ret) => {
+	// 	ret.forEach(item => {
+	// 		if (item.name.indexOf(req.query.keywords) > 0) {
+
+	// 		}
+	// 	})
+	// })
+})
+
+router.get('/search', (req, res) => {
+	res.send("ok")
+})
 router.get('/top/song', (req, res) => {
 	// let typeGet = req.query.type;
 	Song.find({ type: req.query.type }, (err, songs) => {
@@ -688,7 +766,123 @@ router.post("/user/removeAddress", (req, res) => {
 			return "ok";
 		}
 	});
+});
+
+// 筛选不重复的订单号
+// let searchTradeNoNotExistent = (outTradeNo, newOrder) => {
+// 	return new Promise(reslove => {
+// 		Order.find({ outTradeNo: outTradeNo }, (err, ret) => {
+// 			if (ret.length === 0) {
+// 				new Order(newOrder).save(err => {
+// 					if (err) {
+// 						console.info(err);
+// 						reslove(err);
+// 					} else {
+// 						// console.info("okokokokok"+outTradeNo)
+// 						reslove(outTradeNo)
+// 						// return 1;
+// 					}
+// 				})
+// 			} else {
+// 				outTradeNo = outTradeNo + 1;
+// 				newOrder.outTradeNo = outTradeNo;
+// 				reslove(searchTradeNoNotExistent(outTradeNo, newOrder))
+// 			}
+// 		})
+// 	})
+// }
+
+router.get("/order/all", (req, res) => {
+	Order.find({}, (err, ret) => {
+		if (err) {
+			res.send(err);
+			return err;
+		} else {
+			res.send(ret);
+			return ret;
+		}
+	})
 })
+
+// let test = async (val) => {
+// 	return new Promise(reslove => {
+// 		setTimeout(() => {
+// 			val++;
+// 			if (val === 10) {
+// 				reslove(val)
+// 			} else {
+// 				reslove(test(val))
+// 			}
+// 	})
+// 	}, 100)
+// }
+router.post("/order/commit", async (req, res) => {
+	// 查重已经更换为前端查重，若未重复则直接发送到后端，有重复则解决重复子啊发送，在此处保存到数据库订单表中
+	const newOrder = req.body;
+	new Order(req.body).save();
+	// console.info(newOrder)
+	// let outTradeNo = await searchTradeNoNotExistent(newOrder.outTradeNo, newOrder);
+	// console.info(req.body.outTradeNo)
+	const url = await pay(req.body.outTradeNo, req.body.subject, req.body.body)
+	res.send(url);
+	// res.send("1");
+})
+
+router.post("/order/message", async (req, res) => {
+	// 向支付宝发起验证
+	const outTradeNo = req.body.outTradeNo;
+
+	const newUrl = await queryOrder(outTradeNo);
+
+	axios({
+		method: 'GET',
+		url: newUrl
+	})
+		.then(data => {
+			console.log('查询支付结果:', data.data);
+			let r = data.data.alipay_trade_query_response;
+			let message = { status: 1, message: '交易创建，等待买家付款' }
+			if (r.code === '10000') { // 接口调用成功
+				switch (r.trade_status) {
+					case 'WAIT_BUYER_PAY':
+						message.status = 1;
+						message.message = "交易创建，等待买家付款"
+						res.send(message);
+						break;
+					case 'TRADE_CLOSED':
+						// const message = { status: 1, message: '未付款交易超时关闭，或支付完成后全额退款' }
+						message.status = 1;
+						message.message = '未付款交易超时关闭，或支付完成后全额退款'
+						res.send(message);
+						break;
+					case 'TRADE_SUCCESS':
+						// const message = { status: 2, message: '交易支付成功' }
+						message.status = 2;
+						message.message = '交易支付成功'
+						res.send(message);
+						break;
+					case 'TRADE_FINISHED':
+						// const message = { status: 1, message: '交易结束，不可退款' }
+						message.status = 1;
+						message.message = '交易结束，不可退款'
+						res.send(message);
+						break;
+				}
+			} else if (r.code === '40004') {
+				// const message = { status: 0, message: '交易不存在' }
+				message.status = 0;
+				message.message = '交易不存在'
+				res.send(message);
+			}
+		})
+		.catch(err => {
+			res.json({
+				msg: '查询失败',
+				err
+			});
+		});
+})
+
 // 
 // router.get('/delcar', (req, res) => {
 // 	console.log(req.query);
